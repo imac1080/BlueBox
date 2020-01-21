@@ -3,6 +3,7 @@ package com.bluebox.game;
 import java.util.Iterator;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
@@ -26,15 +27,18 @@ public class GameScreen implements Screen {
     OrthographicCamera camera;
     Rectangle bucket;
     Array<Rectangle> raindrops;
+    Array<Rectangle> cubos;
     long lastDropTime;
     int dropsGathered;
+    boolean direccion=false;
+
 
     public GameScreen(final MyGdxGame game) {
         this.game = game;
 
         // load the images for the droplet and the bucket, 64x64 pixels each
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
-        bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+        bucketImage = new Texture(Gdx.files.internal("cubo.png"));
 
         // load the drop sound effect and the rain background "music"
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
@@ -55,7 +59,9 @@ public class GameScreen implements Screen {
 
         // create the raindrops array and spawn the first raindrop
         raindrops = new Array<Rectangle>();
+        cubos= new Array<Rectangle>();
         spawnRaindrop();
+        spawnCubo();
 
     }
 
@@ -67,6 +73,19 @@ public class GameScreen implements Screen {
         raindrop.height = 64;
         raindrops.add(raindrop);
         lastDropTime = TimeUtils.nanoTime();
+    }
+
+    private void spawnCubo() {
+            Rectangle cubo = new Rectangle();
+            cubo.x = 800 / 2 - 64 / 2;
+            if (cubos.size==0){
+                cubo.y = 0;
+            }else{
+                cubo.y = cubos.size*64;
+            }
+            cubo.width = 64;
+            cubo.height = 64;
+            cubos.add(cubo);
     }
 
     @Override
@@ -88,39 +107,60 @@ public class GameScreen implements Screen {
         // begin a new batch and draw the bucket and
         // all drops
         game.batch.begin();
-        game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
-        game.batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
+        game.font.draw(game.batch, "Drops Collected: " + cubos.size, 0, 480);
+        for (Rectangle cubo : cubos) {
+            game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
+        }
+        //Rectangle cubo = cubos.get(cubos.size-1);
+        //game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
+
+        //game.batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
         }
         game.batch.end();
 
         // process user input
-        if (Gdx.input.isTouched()) {
-            Vector3 touchPos = new Vector3();
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            /*Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
-            bucket.x = touchPos.x - 64 / 2;
+            cubo.x = touchPos.x - 64 / 2;*/
+            if (cubos.size==7){
+                game.setScreen(new MainMenuScreen(game));
+                dispose();
+            }else{
+                spawnCubo();
+            }
         }
         if (Gdx.input.isKeyPressed(Keys.LEFT))
-            bucket.x -= 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x -= 200 * Gdx.graphics.getDeltaTime();
         if (Gdx.input.isKeyPressed(Keys.RIGHT))
-            bucket.x += 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x += 200 * Gdx.graphics.getDeltaTime();
 
         // make sure the bucket stays within the screen bounds
-        if (bucket.x < 0)
-            bucket.x = 0;
-        if (bucket.x > 800 - 64)
-            bucket.x = 800 - 64;
+        if (cubos.get(cubos.size-1).x < 0){
+            // bucket.x = 0;
+            direccion=false;
+        }
+        if (cubos.get(cubos.size-1).x > 800 - 64){
+            //bucket.x = 800 - 64;
+            direccion=true;
+        }
 
         // check if we need to create a new raindrop
-        if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
-            spawnRaindrop();
+        //if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
+            //spawnRaindrop();
+        if (direccion){
+            cubos.get(cubos.size-1).x -= 200 * Gdx.graphics.getDeltaTime();
+        }else{
+            cubos.get(cubos.size-1).x += 200 * Gdx.graphics.getDeltaTime();
+        }
 
         // move the raindrops, remove any that are beneath the bottom edge of
         // the screen or that hit the bucket. In the later case we increase the
         // value our drops counter and add a sound effect.
-        Iterator<Rectangle> iter = raindrops.iterator();
+        /*Iterator<Rectangle> iter = raindrops.iterator();
         while (iter.hasNext()) {
             Rectangle raindrop = iter.next();
             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
@@ -131,7 +171,7 @@ public class GameScreen implements Screen {
                 dropSound.play();
                 iter.remove();
             }
-        }
+        }*/
     }
 
     @Override
