@@ -1,6 +1,7 @@
 package com.bluebox.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,7 +14,6 @@ public class MainMenuScreen implements Screen {
 
     public MainMenuScreen(final MyGdxGame game) {
         this.game = game;
-
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
 
@@ -31,7 +31,7 @@ public class MainMenuScreen implements Screen {
         game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
         game.batch.end();
 
-        if (Gdx.input.isTouched()) {
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
             game.setScreen(new GameScreen(game));
             dispose();
         }

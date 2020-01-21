@@ -11,6 +11,9 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
@@ -32,11 +35,23 @@ public class GameScreen implements Screen {
     int dropsGathered;
     boolean direccion=false;
 
+    // Constant rows and columns of the sprite sheet
+    private static final int FRAME_COLS = 4, FRAME_ROWS = 3;
+
+    // Objects used
+    Animation<TextureRegion> walkAnimation; // Must declare frame type (TextureRegion)
+    Texture walkSheet;
+    SpriteBatch spriteBatch;
+
+    // A variable for tracking elapsed time for the animation
+    float stateTime;
+
 
     public GameScreen(final MyGdxGame game) {
         this.game = game;
 
-        // load the images for the droplet and the bucket, 64x64 pixels each
+        // load the images for the droplet and the bucket, 64x64 pixels eachx
+        walkSheet = new Texture(Gdx.files.internal("spritesheet.png"));
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
         bucketImage = new Texture(Gdx.files.internal("cubo.png"));
 
@@ -44,6 +59,32 @@ public class GameScreen implements Screen {
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
         rainMusic.setLooping(true);
+
+// Use the split utility method to create a 2D array of TextureRegions. This is
+        // possible because this sprite sheet contains frames of equal size and they are
+        // all aligned.
+        TextureRegion[][] tmp = TextureRegion.split(walkSheet,
+                walkSheet.getWidth() / FRAME_COLS,
+                walkSheet.getHeight() / FRAME_ROWS);
+
+// Place the regions into a 1D array in the correct order, starting from the top
+        // left, going across first. The Animation constructor requires a 1D array.
+        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+        int index = 0;
+        for (int i = 0; i < FRAME_ROWS; i++) {
+            for (int j = 0; j < FRAME_COLS; j++) {
+                walkFrames[index++] = tmp[i][j];
+            }
+        }
+
+
+        // Initialize the Animation with the frame interval and array of frames
+        walkAnimation = new Animation<TextureRegion>(0.25f, walkFrames);
+
+        // Instantiate a SpriteBatch for drawing and reset the elapsed animation
+        // time to 0
+        spriteBatch = new SpriteBatch();
+        stateTime = 0f;
 
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
@@ -96,6 +137,9 @@ public class GameScreen implements Screen {
         // of the color to be used to clear the screen.
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
+        TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+
 
         // tell the camera to update its matrices.
         camera.update();
@@ -103,10 +147,10 @@ public class GameScreen implements Screen {
         // tell the SpriteBatch to render in the
         // coordinate system specified by the camera.
         game.batch.setProjectionMatrix(camera.combined);
-
         // begin a new batch and draw the bucket and
         // all drops
         game.batch.begin();
+
         game.font.draw(game.batch, "Drops Collected: " + cubos.size, 0, 480);
         for (Rectangle cubo : cubos) {
             game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
@@ -126,6 +170,9 @@ public class GameScreen implements Screen {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             cubo.x = touchPos.x - 64 / 2;*/
+            spriteBatch.begin();
+            spriteBatch.draw(currentFrame, 50, 50); // Draw current frame at (50, 50)
+            spriteBatch.end();
             if (cubos.size==7){
                 game.setScreen(new MainMenuScreen(game));
                 dispose();
