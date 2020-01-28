@@ -1,0 +1,68 @@
+sprites.png
+size: 1350, 1350
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cuboVerde
+  rotate: false
+  xy: 0, 0
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 450, 0
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 900, 0
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 0, 450
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 450, 450
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 900, 450
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 0, 900
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 450, 900
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
+cuboVerde
+  rotate: false
+  xy: 900, 900
+  size: 450, 450
+  orig: 450, 450
+  offset: 0, 0
+  index: -1
