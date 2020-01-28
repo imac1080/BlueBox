@@ -12,7 +12,9 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
@@ -20,11 +22,14 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import sun.rmi.runtime.Log;
+
 public class GameScreen implements Screen {
     final MyGdxGame game;
 
     Texture dropImage;
     Texture bucketImage;
+    Texture bucketImageGreen;
     Sound dropSound;
     Music rainMusic;
     OrthographicCamera camera;
@@ -34,6 +39,7 @@ public class GameScreen implements Screen {
     long lastDropTime;
     int dropsGathered;
     boolean direccion=false;
+    TextureAtlas textureAtlas;
 
     // Constant rows and columns of the sprite sheet
     private static final int FRAME_COLS = 4, FRAME_ROWS = 3;
@@ -42,7 +48,10 @@ public class GameScreen implements Screen {
     Animation<TextureRegion> walkAnimation; // Must declare frame type (TextureRegion)
     Texture walkSheet;
     SpriteBatch spriteBatch;
+    Sprite banana;
+    private float elapsedTime = 0;
 
+    public Animation<TextureRegion> runningAnimation;
     // A variable for tracking elapsed time for the animation
     float stateTime;
 
@@ -54,12 +63,17 @@ public class GameScreen implements Screen {
         walkSheet = new Texture(Gdx.files.internal("spritesheet.png"));
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
         bucketImage = new Texture(Gdx.files.internal("cubo.png"));
+        bucketImageGreen = new Texture(Gdx.files.internal("cuboVerde9.png"));
 
         // load the drop sound effect and the rain background "music"
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
         rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
         rainMusic.setLooping(true);
 
+        textureAtlas = new TextureAtlas("sprites.atlas");
+        Sprite sprite = textureAtlas.createSprite("banana");
+        banana = textureAtlas.createSprite("banana");
+        runningAnimation = new Animation<TextureRegion>(0.133f, textureAtlas.findRegions("cuboVerde"), Animation.PlayMode.NORMAL);
 // Use the split utility method to create a 2D array of TextureRegions. This is
         // possible because this sprite sheet contains frames of equal size and they are
         // all aligned.
@@ -135,6 +149,7 @@ public class GameScreen implements Screen {
         // arguments to glClearColor are the red, green
         // blue and alpha component in the range [0,1]
         // of the color to be used to clear the screen.
+
         Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         stateTime += Gdx.graphics.getDeltaTime(); // Accumulate elapsed animation time
@@ -150,10 +165,20 @@ public class GameScreen implements Screen {
         // begin a new batch and draw the bucket and
         // all drops
         game.batch.begin();
-
+        //banana.draw(game.batch);
         game.font.draw(game.batch, "Drops Collected: " + cubos.size, 0, 480);
+        int i =0;
+            elapsedTime += Gdx.graphics.getDeltaTime();
         for (Rectangle cubo : cubos) {
-            game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
+            if (cubos.size-1==i){
+                game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
+//                elapsedTime=0;
+            }else if (cubos.size-2==i){
+                game.batch.draw(runningAnimation.getKeyFrame(elapsedTime, false), cubo.x, cubo.y, cubo.width, cubo.height);
+            }else{
+                game.batch.draw(bucketImageGreen, cubo.x, cubo.y, cubo.width, cubo.height);
+            }
+            i++;
         }
         //Rectangle cubo = cubos.get(cubos.size-1);
         //game.batch.draw(bucketImage, cubo.x, cubo.y, cubo.width, cubo.height);
@@ -170,12 +195,26 @@ public class GameScreen implements Screen {
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
             cubo.x = touchPos.x - 64 / 2;*/
-            spriteBatch.begin();
-            spriteBatch.draw(currentFrame, 50, 50); // Draw current frame at (50, 50)
-            spriteBatch.end();
+//            spriteBatch.begin();
+//            spriteBatch.draw(currentFrame, 50, 50); // Draw current frame at (50, 50)
+//            spriteBatch.end();
+
+            elapsedTime =0;
+//            elapsedTime += Gdx.graphics.getDeltaTime();
+
+//            game.batch.begin();
+//            game.batch.draw(runningAnimation.getKeyFrame(elapsedTime, false), cubos.get(cubos.size-1).x, cubos.get(cubos.size-1).y, cubos.get(cubos.size-1).width, cubos.get(cubos.size-1).height);
+//            game.batch.end();
             if (cubos.size==7){
                 game.setScreen(new MainMenuScreen(game));
                 dispose();
+            }else if (cubos.size>1){
+                if ((cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)<=2 || (cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)<=-2){
+                    spawnCubo();
+                }else{
+                    game.setScreen(new MainMenuScreen(game));
+                    dispose();
+                }
             }else{
                 spawnCubo();
             }
@@ -250,6 +289,7 @@ public class GameScreen implements Screen {
         bucketImage.dispose();
         dropSound.dispose();
         rainMusic.dispose();
+        textureAtlas.dispose();
     }
 
 }
