@@ -1,6 +1,7 @@
 package com.bluebox.game;
 
 import java.util.Iterator;
+import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -50,6 +51,7 @@ public class GameScreen implements Screen {
     SpriteBatch spriteBatch;
     Sprite banana;
     private float elapsedTime = 0;
+    int velocidadCubo=190;
 
     public Animation<TextureRegion> runningAnimation;
     // A variable for tracking elapsed time for the animation
@@ -67,7 +69,7 @@ public class GameScreen implements Screen {
 
         // load the drop sound effect and the rain background "music"
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
-        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain.mp3"));
+        rainMusic = Gdx.audio.newMusic(Gdx.files.internal("rain2.mp3"));
         rainMusic.setLooping(true);
 
         textureAtlas = new TextureAtlas("sprites.atlas");
@@ -141,6 +143,9 @@ public class GameScreen implements Screen {
             cubo.width = 64;
             cubo.height = 64;
             cubos.add(cubo);
+        Random rd = new Random();
+        direccion=rd.nextBoolean();
+        velocidadCubo=velocidadCubo+100;
     }
 
     @Override
@@ -206,10 +211,10 @@ public class GameScreen implements Screen {
 //            game.batch.draw(runningAnimation.getKeyFrame(elapsedTime, false), cubos.get(cubos.size-1).x, cubos.get(cubos.size-1).y, cubos.get(cubos.size-1).width, cubos.get(cubos.size-1).height);
 //            game.batch.end();
             if (cubos.size==7){
-                game.setScreen(new MainMenuScreen(game));
+                game.setScreen(new YouWin(game));
                 dispose();
             }else if (cubos.size>1){
-                if ((cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)<=2 || (cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)<=-2){
+                if ((cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)<=20 && (cubos.get(cubos.size-2).x-32)-(cubos.get(cubos.size-1).x-32)>=-20){
                     spawnCubo();
                 }else{
                     game.setScreen(new MainMenuScreen(game));
@@ -220,9 +225,9 @@ public class GameScreen implements Screen {
             }
         }
         if (Gdx.input.isKeyPressed(Keys.LEFT))
-            cubos.get(cubos.size-1).x -= 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x -= velocidadCubo * Gdx.graphics.getDeltaTime();
         if (Gdx.input.isKeyPressed(Keys.RIGHT))
-            cubos.get(cubos.size-1).x += 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x += velocidadCubo * Gdx.graphics.getDeltaTime();
 
         // make sure the bucket stays within the screen bounds
         if (cubos.get(cubos.size-1).x < 0){
@@ -238,9 +243,9 @@ public class GameScreen implements Screen {
         //if (TimeUtils.nanoTime() - lastDropTime > 1000000000)
             //spawnRaindrop();
         if (direccion){
-            cubos.get(cubos.size-1).x -= 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x -= velocidadCubo * Gdx.graphics.getDeltaTime();
         }else{
-            cubos.get(cubos.size-1).x += 200 * Gdx.graphics.getDeltaTime();
+            cubos.get(cubos.size-1).x += velocidadCubo * Gdx.graphics.getDeltaTime();
         }
 
         // move the raindrops, remove any that are beneath the bottom edge of
