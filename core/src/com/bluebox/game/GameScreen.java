@@ -171,7 +171,7 @@ public class GameScreen implements Screen {
         // all drops
         game.batch.begin();
         //banana.draw(game.batch);
-        game.font.draw(game.batch, "Drops Collected: " + cubos.size, 0, 480);
+        game.font.draw(game.batch, "Box to win: " + cubos.size+"/7", 10, 470);
         int i =0;
             elapsedTime += Gdx.graphics.getDeltaTime();
         for (Rectangle cubo : cubos) {
